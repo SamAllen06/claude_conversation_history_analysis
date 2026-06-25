@@ -6,5 +6,5 @@ My goal is simply to improve my programming skills, particularly with file input
 2. Download your conversation history from Claude
 3. Run the script on your conversation history
 ```
-python analyze_input.py input.json
+python src/analyze_input.py your_directory/input.json
 ```
