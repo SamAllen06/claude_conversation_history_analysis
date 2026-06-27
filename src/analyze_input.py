@@ -7,15 +7,12 @@ import datetime as dt
 
 import pdb
 
-
+#TODO see if I can use parquet or other techniques to increase speed of programs
 # initialize global vars
 all_data = {}
-all_time = 'All Time'
-per_month = "Per Month"
-raw_data = 'Raw Data'
 analyzed_data = 'Analyzed Data'
+per_month = "Per Month"
 file_types = 'File Types'
-all_file_types: list[str] = []
 
 
 def calc_median(ints: list[int]) -> int:
@@ -26,7 +23,7 @@ def calc_median(ints: list[int]) -> int:
         return ints[middle_position]
 
 
-def calc_mmmr_box_plot(ints: list[int]) -> dict[str, float]:
+def calc_mmmr_box_plot(ints: list[int]) -> dict[str: float]:
     ints.sort()
     item_counts = dict()
     mmmr = 'MMMR'
@@ -35,7 +32,7 @@ def calc_mmmr_box_plot(ints: list[int]) -> dict[str, float]:
 
     for item in ints:
         if item not in item_counts:
-            item_counts.update({item: 0})
+            item_counts[item] = 0
         item_counts[item] += 1
 
     mean = sum(ints)/len(ints)
@@ -77,7 +74,7 @@ def create_list_from_dict(dict: dict[str: dict[str: int]]) -> list[int]:
     return result
 
 
-def calc_mmmr_box_plot_for_all_months(data_name: str, dict: dict[str: dict[str: list[int]]]):
+def calc_mmmr_box_plot_for_all_months(data_name, dict: dict[str: dict[str: list[int]]]):
     all_data[analyzed_data][per_month][data_name] = {}
     for year in dict:
         all_data[analyzed_data][per_month][data_name][year] = {}
@@ -85,26 +82,26 @@ def calc_mmmr_box_plot_for_all_months(data_name: str, dict: dict[str: dict[str: 
             all_data[analyzed_data][per_month][data_name][year][month] = calc_mmmr_box_plot(dict[year][month])
 
 
-def calc_mmmr_box_plot_for_all_months_all_file_types(data_name: str, dictionary: dict[str: dict[str: dict[str: int]]]):
+def calc_mmmr_box_plot_for_all_months_all_file_types(data_name, dictionary: dict[str: dict[str: dict[str: int]]]):
     all_data[analyzed_data][per_month][file_types][data_name] = {}
     monthly_data_by_file_type: dict[str: list[int]] = {}
     for year in dictionary:
         for month in dictionary[year]:
             for file_type in dictionary[year][month]:
                 if file_type not in monthly_data_by_file_type:
-                    monthly_data_by_file_type.update({file_type: []})
+                    monthly_data_by_file_type[file_type] = []
                 monthly_data_by_file_type[file_type].append(dictionary[year][month][file_type])
     for file_type in monthly_data_by_file_type:
         all_data[analyzed_data][per_month][file_types][data_name][file_type] = calc_mmmr_box_plot(monthly_data_by_file_type[file_type])
 
 
-def append_int_to_dict_for_year_month(int, dict: dict[str: dict[str: list[int]]], year, month) -> dict[str: dict[str: list[int]]]:
-    if year not in dict:
-        dict.update({year: {}})
-    if month not in dict[year]:
-        dict[year].update({month: []})
-    dict[year][month].append(int)
-    return dict
+def append_int_to_dict_for_year_month(int, dictionary: dict[str: dict[str: list[int]]], year, month) -> dict[str: dict[str: list[int]]]:
+    if year not in dictionary:
+        dictionary[year] = {}
+    if month not in dictionary[year]:
+        dictionary[year][month] = []
+    dictionary[year][month].append(int)
+    return dictionary
 
 
 def init_output_data_vars(list1: list[str], list2: list[str]):
@@ -113,13 +110,12 @@ def init_output_data_vars(list1: list[str], list2: list[str]):
         for list2_item in list2:
             all_data[list1_item][list2_item] = {}
 
-
-def add_missing_file_types(dictionary: dict[str: dict[str: dict[str: int]]]) -> dict[str: dict[str: dict[str: int]]]:
+def add_missing_file_types(dictionary: dict[str: dict[str: dict[str: int]]], all_file_types) -> dict[str: dict[str: dict[str: int]]]:
     for year in dictionary:
             for month in dictionary[year]:
                 for file_type in all_file_types:
                     if file_type not in dictionary[year][month]:
-                        dictionary[year][month].update({file_type: 0})
+                        dictionary[year][month][file_type] = 0
     return dictionary
 
 
@@ -184,7 +180,7 @@ def add_to_single_words_dict(words_and_regexes: list[str], dictionary: dict[str:
     i = check_if_contains_letter(words_and_regexes[0])
     while i < len(words_and_regexes):
         if words_and_regexes[i] not in dictionary:
-            dictionary.update({words_and_regexes[i]: 0})
+            dictionary[words_and_regexes[i]] = 0
         dictionary[words_and_regexes[i]] += 1
         i += 2
     return dictionary
@@ -195,7 +191,7 @@ def add_to_double_words_dict(words_and_regexes: list[str], dictionary: dict[str:
     while i < len(words_and_regexes)-2:
         three_strings: str = words_and_regexes[i] + words_and_regexes[i+1] + words_and_regexes[i+2]
         if three_strings not in dictionary:
-            dictionary.update({three_strings: 0})
+            dictionary[three_strings] = 0
         dictionary[three_strings] += 1
         i += 2
     return dictionary
@@ -206,7 +202,7 @@ def add_to_triple_words_dict(words_and_regexes: list[str], dictionary: dict[str:
     while i < len(words_and_regexes)-4:
         five_strings: str = words_and_regexes[i] + words_and_regexes[i+1] + words_and_regexes[i+2] + words_and_regexes[i+3] + words_and_regexes[i+4]
         if five_strings not in dictionary:
-            dictionary.update({five_strings: 0})
+            dictionary[five_strings] = 0
         dictionary[five_strings] += 1
         i += 2
     return dictionary
@@ -217,7 +213,7 @@ def add_to_quadruple_words_dict(words_and_regexes: list[str], dictionary: dict[s
     while i < len(words_and_regexes)-6:
         seven_strings: str = words_and_regexes[i] + words_and_regexes[i+1] + words_and_regexes[i+2] + words_and_regexes[i+3] + words_and_regexes[i+4] + words_and_regexes[i+5] + words_and_regexes[i+6]
         if seven_strings not in dictionary:
-            dictionary.update({seven_strings: 0})
+            dictionary[seven_strings] = 0
         dictionary[seven_strings] += 1
         i += 2
     return dictionary
@@ -228,9 +224,17 @@ def add_to_quintuple_words_dict(words_and_regexes: list[str], dictionary: dict[s
     while i < len(words_and_regexes)-8:
         nine_strings: str = words_and_regexes[i] + words_and_regexes[i+1] + words_and_regexes[i+2] + words_and_regexes[i+3] + words_and_regexes[i+4] + words_and_regexes[i+5] + words_and_regexes[i+6] + words_and_regexes[i+7] + words_and_regexes[i+8]
         if nine_strings not in dictionary:
-            dictionary.update({nine_strings: 0})
+            dictionary[nine_strings] = 0
         dictionary[nine_strings] += 1
         i += 2
+    return dictionary
+
+
+def init_year_month_in_dict(year, month, dictionary: dict[str: dict[str: dict[str: int]]]) -> dict[str: dict[str: dict[str: int]]]:
+    if year not in dictionary:
+        dictionary[year] = {}
+    if month not in dictionary[year]:
+        dictionary[year][month] = {}
     return dictionary
     
 
@@ -245,6 +249,8 @@ class main():
     input = read_path()
     with open(input, mode = "r", encoding = "utf-8") as infile:
         conversations = json.load(infile)
+        #initialize misc vars
+        all_file_types: list[str] = []
 
         # initialize input data vars
         # # initialize all time vars, lists, and dictionaries
@@ -253,7 +259,6 @@ class main():
         days_using_claude = (dt.datetime.strptime(conversations[-1]['created_at'][0:-2], format) - dt.datetime.strptime(conversations[0]['created_at'][0:-2], format)).days
         all_time_ave_number_of_conversations_per_day = len(conversations) / days_using_claude
         all_time_number_of_messages = 0
-
         all_time_human_messages_lengths: list[int] = []
         all_time_first_human_messages_lengths: list[int] = []
         all_time_assistant_messages_lengths: list[int] = []
@@ -262,76 +267,79 @@ class main():
         all_time_files_per_conversation_from_human: list[int] = []
         all_time_files_per_conversation_from_assistant: list[int] = []
 
-        all_time_file_numbers: dict[str, int] = {}
-        all_time_file_numbers_from_human: dict[str, int] = {}
-        all_time_file_numbers_from_assistant: dict[str, int] = {}
-        # all_time_words_in_convo_titles: dict[str, int] = {}
-        # all_time_two_word_combos_in_convo_titles: dict[str, int] = {}
-        # all_time_three_word_combos_in_convo_titles: dict[str, int] = {}
-        # all_time_four_word_combos_in_convo_titles: dict[str, int] = {}
-        # all_time_five_word_combos_in_convo_titles: dict[str, int] = {}
-        all_time_words_in_human_messages: dict[str, int] = {}
-        # all_time_two_word_combos_in_human_messages: dict[str, int] = {}
-        # all_time_three_word_combos_in_human_messages: dict[str, int] = {}
-        # all_time_four_word_combos_in_human_messages: dict[str, int] = {}
-        # all_time_five_word_combos_in_human_messages: dict[str, int] = {}
-        # all_time_words_in_assistant_messages: dict[str, int] = {}
-        # all_time_two_word_combos_in_assistant_messages: dict[str, int] = {}
-        # all_time_three_word_combos_in_assistant_messages: dict[str, int] = {}
-        # all_time_four_word_combos_in_assistant_messages: dict[str, int] = {}
-        # all_time_five_word_combos_in_assistant_messages: dict[str, int] = {}
+        all_time_file_numbers: dict[str: int] = {}
+        all_time_file_numbers_from_human: dict[str: int] = {}
+        all_time_file_numbers_from_assistant: dict[str: int] = {}
+
+        all_time_words_in_convo_names: dict[str: int] = {}
+        all_time_two_words_in_convo_names: dict[str: int] = {}
+        all_time_three_words_in_convo_names: dict[str: int] = {}
+        all_time_four_words_in_convo_names: dict[str: int] = {}
+        all_time_five_words_in_convo_names: dict[str: int] = {}
+        all_time_words_in_human_messages: dict[str: int] = {}
+        all_time_two_words_in_human_messages: dict[str: int] = {}
+        all_time_three_words_in_human_messages: dict[str: int] = {}
+        all_time_four_words_in_human_messages: dict[str: int] = {}
+        all_time_five_words_in_human_messages: dict[str: int] = {}
+        all_time_words_in_assistant_messages: dict[str: int] = {}
+        all_time_two_words_in_assistant_messages: dict[str: int] = {}
+        all_time_three_words_in_assistant_messages: dict[str: int] = {}
+        all_time_four_words_in_assistant_messages: dict[str: int] = {}
+        all_time_five_words_in_assistant_messages: dict[str: int] = {}
+
 
         # # initialize per month vars, lists, and dictionaries
-        per_month_number_of_conversations: dict[str, dict[str, int]] = {}
+        per_month_number_of_conversations: dict[str: dict[str: int]] = {}
         # initialize per_month_number_of_conversations with all months set to 0 conversations
         start_year = dt.datetime.strptime(conversations[0]['created_at'][0:-2], format).year
         start_year_start_month = dt.datetime.strptime(conversations[0]['created_at'][0:-2], format).month
         end_year = dt.datetime.strptime(conversations[-1]['created_at'][0:-2], format).year
         end_year_end_month = dt.datetime.strptime(conversations[-1]['created_at'][0:-2], format).month
-        per_month_number_of_conversations.update({start_year: {}})
+        per_month_number_of_conversations[start_year] = {}
         while start_year_start_month <= 12:
-            per_month_number_of_conversations[start_year].update({start_year_start_month: 0})
+            per_month_number_of_conversations[start_year][start_year_start_month] = 0
             start_year_start_month += 1
         start_year += 1
         while start_year < end_year:
-            per_month_number_of_conversations.update({start_year: {}})
+            per_month_number_of_conversations[start_year] = {}
             month = 1
             while month <= 12:
-                per_month_number_of_conversations[start_year].update({month: 0})
+                per_month_number_of_conversations[start_year][month] = 0
                 month += 1
             start_year += 1
-        per_month_number_of_conversations.update({end_year: {}})
+        per_month_number_of_conversations[end_year] = {}
         month = 1
         while month <= end_year_end_month:
-            per_month_number_of_conversations[end_year].update({month: 0})
+            per_month_number_of_conversations[end_year][month] = 0
             month += 1
 
-        per_month_human_messages_lengths: dict[str, dict[str, list[int]]] = {}
-        per_month_first_human_messages_lengths: dict[str, dict[str, list[int]]] = {}
-        per_month_assistant_messages_lengths: dict[str, dict[str, list[int]]] = {}
-        per_month_conversations_lengths: dict[str, dict[str, list[int]]] = {}
-        per_month_files_per_conversation: dict[str, dict[str, list[int]]] = {}
-        per_month_files_per_conversation_from_human: dict[str, dict[str, list[int]]] = {}
-        per_month_files_per_conversation_from_assistant: dict[str, dict[str, list[int]]] = {}
+        per_month_human_messages_lengths: dict[str: dict[str: list[int]]] = {}
+        per_month_first_human_messages_lengths: dict[str: dict[str: list[int]]] = {}
+        per_month_assistant_messages_lengths: dict[str: dict[str: list[int]]] = {}
+        per_month_conversations_lengths: dict[str: dict[str: list[int]]] = {}
+        per_month_files_per_conversation: dict[str: dict[str: list[int]]] = {}
+        per_month_files_per_conversation_from_human: dict[str: dict[str: list[int]]] = {}
+        per_month_files_per_conversation_from_assistant: dict[str: dict[str: list[int]]] = {}
 
-        per_month_file_numbers: dict[str, dict[str, dict[str, int]]] = {}
-        per_month_file_numbers_from_human: dict[str, dict[str, dict[str, int]]] = {}
-        per_month_file_numbers_from_assistant: dict[str, dict[str, dict[str, int]]] = {}
-        # per_month_words_in_convo_titles: dict[str, dict[str, int]] = {}
-        # per_month_two_word_combos_in_convo_titles: dict[str, dict[str, int]] = {}
-        # per_month_three_word_combos_in_convo_titles: dict[str, dict[str, int]] = {}
-        # per_month_four_word_combos_in_convo_titles: dict[str, dict[str, int]] = {}
-        # per_month_five_word_combos_in_convo_titles: dict[str, dict[str, int]] = {}
-        # per_month_words_in_human_messages: dict[str, dict[str, int]] = {}
-        # per_month_two_word_combos_in_human_messages: dict[str, dict[str, int]] = {}
-        # per_month_three_word_combos_in_human_messages: dict[str, dict[str, int]] = {}
-        # per_month_four_word_combos_in_human_messages: dict[str, dict[str, int]] = {}
-        # per_month_five_word_combos_in_human_messages: dict[str, dict[str, int]] = {}
-        # per_month_words_in_assistant_messages: dict[str, dict[str, int]] = {}
-        # per_month_two_word_combos_in_assistant_messages: dict[str, dict[str, int]] = {}
-        # per_month_three_word_combos_in_assistant_messages: dict[str, dict[str, int]] = {}
-        # per_month_four_word_combos_in_assistant_messages: dict[str, dict[str, int]] = {}
-        # per_month_five_word_combos_in_assistant_messages: dict[str, dict[str, int]] = {}
+        per_month_file_numbers: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_file_numbers_from_human: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_file_numbers_from_assistant: dict[str: dict[str: dict[str: int]]] = {}
+
+        per_month_words_in_convo_names: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_two_words_in_convo_names: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_three_words_in_convo_names: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_four_words_in_convo_names: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_five_words_in_convo_names: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_words_in_human_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_two_words_in_human_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_three_words_in_human_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_four_words_in_human_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_five_words_in_human_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_words_in_assistant_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_two_words_in_assistant_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_three_words_in_assistant_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_four_words_in_assistant_messages: dict[str: dict[str: dict[str: int]]] = {}
+        per_month_five_words_in_assistant_messages: dict[str: dict[str: dict[str: int]]] = {}
 
         # get every conversation
         for conversation in range(0, len(conversations)):
@@ -353,6 +361,24 @@ class main():
                 conversation_length = len(conversations[conversation]['chat_messages'])
                 all_time_conversations_lengths.append(conversation_length)
                 per_month_conversations_lengths = append_int_to_dict_for_year_month(conversation_length, per_month_conversations_lengths, year, month)
+                # get conversation name words and regexes
+                title_words_and_regexes = split_message(repr(conversations[conversation]['name']))
+                all_time_words_in_convo_names = add_to_single_words_dict(title_words_and_regexes, all_time_words_in_convo_names)
+                all_time_two_words_in_convo_names = add_to_double_words_dict(title_words_and_regexes, all_time_two_words_in_convo_names)
+                all_time_three_words_in_convo_names = add_to_triple_words_dict(title_words_and_regexes, all_time_three_words_in_convo_names)
+                all_time_four_words_in_convo_names = add_to_quadruple_words_dict(title_words_and_regexes, all_time_four_words_in_convo_names)
+                all_time_five_words_in_convo_names = add_to_quintuple_words_dict(title_words_and_regexes, all_time_five_words_in_convo_names)
+                per_month_words_in_convo_names = init_year_month_in_dict(year, month, per_month_words_in_convo_names)
+                per_month_words_in_convo_names[year][month] = add_to_single_words_dict(title_words_and_regexes, per_month_words_in_convo_names[year][month])
+                per_month_two_words_in_convo_names= init_year_month_in_dict(year, month, per_month_two_words_in_convo_names)
+                per_month_two_words_in_convo_names[year][month] = add_to_double_words_dict(title_words_and_regexes, per_month_two_words_in_convo_names[year][month])
+                per_month_three_words_in_convo_names= init_year_month_in_dict(year, month, per_month_three_words_in_convo_names)
+                per_month_three_words_in_convo_names[year][month] = add_to_triple_words_dict(title_words_and_regexes, per_month_three_words_in_convo_names[year][month])
+                per_month_four_words_in_convo_names= init_year_month_in_dict(year, month, per_month_four_words_in_convo_names)
+                per_month_four_words_in_convo_names[year][month] = add_to_quadruple_words_dict(title_words_and_regexes, per_month_four_words_in_convo_names[year][month])
+                per_month_five_words_in_convo_names= init_year_month_in_dict(year, month, per_month_five_words_in_convo_names)
+                per_month_five_words_in_convo_names[year][month] = add_to_quintuple_words_dict(title_words_and_regexes, per_month_five_words_in_convo_names[year][month])
+
                 # initialize variables to hold number of files in conversation
                 conversation_number_of_files = 0
                 conversation_number_of_files_from_human = 0
@@ -366,12 +392,47 @@ class main():
                     # get length of message from human
                     if conversations[conversation]['chat_messages'][message]['sender'] == "human":
                         all_time_human_messages_lengths.append(message_length)
+                        # pdb.set_trace()
                         per_month_human_messages_lengths = append_int_to_dict_for_year_month(message_length, per_month_human_messages_lengths, year, month)
+                        # pdb.set_trace()
+                        # get words and phrases
                         all_time_words_in_human_messages = add_to_single_words_dict(words_and_regexes, all_time_words_in_human_messages)
-                    # get length of message from assistant
+                        all_time_two_words_in_human_messages = add_to_double_words_dict(words_and_regexes, all_time_two_words_in_human_messages)
+                        all_time_three_words_in_human_messages = add_to_triple_words_dict(words_and_regexes, all_time_three_words_in_human_messages)
+                        all_time_four_words_in_human_messages = add_to_quadruple_words_dict(words_and_regexes, all_time_four_words_in_human_messages)
+                        all_time_five_words_in_human_messages  = add_to_quintuple_words_dict(words_and_regexes, all_time_five_words_in_human_messages)
+                        per_month_words_in_human_messages= init_year_month_in_dict(year, month, per_month_words_in_human_messages)
+                        per_month_words_in_human_messages[year][month] = add_to_single_words_dict(words_and_regexes, per_month_words_in_human_messages[year][month])
+                        per_month_two_words_in_human_messages= init_year_month_in_dict(year, month, per_month_two_words_in_human_messages)
+                        per_month_two_words_in_human_messages[year][month] = add_to_double_words_dict(words_and_regexes, per_month_two_words_in_human_messages[year][month])
+                        per_month_three_words_in_human_messages= init_year_month_in_dict(year, month, per_month_three_words_in_human_messages)
+                        per_month_three_words_in_human_messages[year][month] = add_to_triple_words_dict(words_and_regexes, per_month_three_words_in_human_messages[year][month])
+                        per_month_four_words_in_human_messages= init_year_month_in_dict(year, month, per_month_four_words_in_human_messages)
+                        per_month_four_words_in_human_messages[year][month] = add_to_quadruple_words_dict(words_and_regexes, per_month_four_words_in_human_messages[year][month])
+                        per_month_five_words_in_human_messages= init_year_month_in_dict(year, month, per_month_five_words_in_human_messages)
+                        per_month_five_words_in_human_messages[year][month] = add_to_quintuple_words_dict(words_and_regexes, per_month_five_words_in_human_messages[year][month])
+
                     if conversations[conversation]['chat_messages'][message]['sender'] == "assistant":
+                        # get length of message from assistant
                         all_time_assistant_messages_lengths.append(message_length)
                         per_month_assistant_messages_lengths = append_int_to_dict_for_year_month(message_length, per_month_assistant_messages_lengths, year, month)
+                        # get words and phrases
+                        all_time_words_in_assistant_messages = add_to_single_words_dict(words_and_regexes, all_time_words_in_assistant_messages)
+                        all_time_two_words_in_assistant_messages = add_to_double_words_dict(words_and_regexes, all_time_two_words_in_assistant_messages)
+                        all_time_three_words_in_assistant_messages = add_to_triple_words_dict(words_and_regexes, all_time_three_words_in_assistant_messages)
+                        all_time_four_words_in_assistant_messages = add_to_quadruple_words_dict(words_and_regexes, all_time_four_words_in_assistant_messages)
+                        all_time_five_words_in_assistant_messages = add_to_quintuple_words_dict(words_and_regexes, all_time_five_words_in_assistant_messages)
+                        per_month_words_in_assistant_messages = init_year_month_in_dict(year, month, per_month_words_in_assistant_messages)
+                        per_month_words_in_assistant_messages[year][month] = add_to_single_words_dict(words_and_regexes, per_month_words_in_assistant_messages[year][month])
+                        per_month_two_words_in_assistant_messages = init_year_month_in_dict(year, month, per_month_two_words_in_assistant_messages)
+                        per_month_two_words_in_assistant_messages[year][month] = add_to_double_words_dict(words_and_regexes, per_month_two_words_in_assistant_messages[year][month])
+                        per_month_three_words_in_assistant_messages = init_year_month_in_dict(year, month, per_month_three_words_in_assistant_messages)
+                        per_month_three_words_in_assistant_messages[year][month] = add_to_triple_words_dict(words_and_regexes, per_month_three_words_in_assistant_messages[year][month])
+                        per_month_four_words_in_assistant_messages = init_year_month_in_dict(year, month, per_month_four_words_in_assistant_messages)
+                        per_month_four_words_in_assistant_messages[year][month] = add_to_quadruple_words_dict(words_and_regexes, per_month_four_words_in_assistant_messages[year][month])
+                        per_month_five_words_in_assistant_messages = init_year_month_in_dict(year, month, per_month_five_words_in_assistant_messages)
+                        per_month_five_words_in_assistant_messages[year][month] = add_to_quintuple_words_dict(words_and_regexes, per_month_five_words_in_assistant_messages[year][month])
+
                     # get all files
                     for file in range(0, len(conversations[conversation]['chat_messages'][message]['files'])):
                         conversation_number_of_files += 1
@@ -384,40 +445,31 @@ class main():
                             all_file_types.append(file_type)
                         # record number of each file
                         if file_type not in all_time_file_numbers:
-                            all_time_file_numbers.update({file_type: 0})
+                            all_time_file_numbers[file_type] = 0
                         all_time_file_numbers[file_type] += 1
-                        if year not in per_month_file_numbers:
-                            per_month_file_numbers.update({year: {}})
-                        if month not in per_month_file_numbers[year]:
-                            per_month_file_numbers[year].update({month: {}})
+                        per_month_file_numbers = init_year_month_in_dict(year, month, per_month_file_numbers)
                         if file_type not in per_month_file_numbers[year][month]:
-                            per_month_file_numbers[year][month].update({file_type:0})
+                            per_month_file_numbers[year][month][file_type] = 0
                         per_month_file_numbers[year][month][file_type] += 1
                         # record number of each file from human
                         if conversations[conversation]['chat_messages'][message]['sender'] == "human":
                             if file_type not in all_time_file_numbers_from_human:
-                                all_time_file_numbers_from_human.update({file_type: 0})
+                                all_time_file_numbers_from_human[file_type] = 0
                             all_time_file_numbers_from_human[file_type] += 1
                             conversation_number_of_files_from_human += 1
-                            if year not in per_month_file_numbers_from_human:
-                                per_month_file_numbers_from_human.update({year: {}})
-                            if month not in per_month_file_numbers_from_human[year]:
-                                per_month_file_numbers_from_human[year].update({month: {}})
+                            per_month_file_numbers_from_human = init_year_month_in_dict(year, month, per_month_file_numbers_from_human)
                             if file_type not in per_month_file_numbers_from_human[year][month]:
-                                per_month_file_numbers_from_human[year][month].update({file_type:0})
+                                per_month_file_numbers_from_human[year][month][file_type] = 0
                             per_month_file_numbers_from_human[year][month][file_type] += 1
                         # record number of each file from assistant
                         elif conversations[conversation]['chat_messages'][message]['sender'] == 'assistant':
                             if file_type not in all_time_file_numbers_from_assistant:
-                                all_time_file_numbers_from_assistant.update({file_type: 0})
+                                all_time_file_numbers_from_assistant[file_type] = 0
                             all_time_file_numbers_from_assistant[file_type] += 1
                             conversation_number_of_files_from_assistant += 1
-                            if year not in per_month_file_numbers_from_assistant:
-                                per_month_file_numbers_from_assistant.update({year: {}})
-                            if month not in per_month_file_numbers_from_assistant[year]:
-                                per_month_file_numbers_from_assistant[year].update({month: {}})
+                            per_month_file_numbers_from_assistant = init_year_month_in_dict(year, month, per_month_file_numbers_from_assistant)
                             if file_type not in per_month_file_numbers_from_assistant[year][month]:
-                                per_month_file_numbers_from_assistant[year][month].update({file_type:0})
+                                per_month_file_numbers_from_assistant[year][month][file_type] = 0
                             per_month_file_numbers_from_assistant[year][month][file_type] += 1
                 # save number of files from conversation
                 all_time_files_per_conversation.append(conversation_number_of_files)
@@ -427,12 +479,14 @@ class main():
                 per_month_files_per_conversation_from_human = append_int_to_dict_for_year_month(conversation_number_of_files_from_human, per_month_files_per_conversation_from_human, year, month)
                 per_month_files_per_conversation_from_assistant = append_int_to_dict_for_year_month(conversation_number_of_files_from_assistant, per_month_files_per_conversation_from_assistant, year, month)
 
-        # initialize naming vars
-        overall = 'Overall'
+        # initialize misc outputs vars
+        misc = 'Miscellaneous'
+        raw_data = 'Raw Data'
+        all_time = 'All Time'
+        per_conversation = 'Per Conversation'
         from_human = 'From Human'
         from_assistant = 'From Assistant'
-        per_conversation = 'Per Conversation'
-        misc = 'Miscellaneous'
+        overall = 'Overall'
 
         # initialize output data vars
         all_data[misc] = {}
@@ -459,9 +513,9 @@ class main():
         all_data[raw_data][per_month]['Number of Files from Human per Conversation'] = per_month_files_per_conversation_from_human
         all_data[raw_data][per_month]['Number of Files from Assistant per Conversation'] = per_month_files_per_conversation_from_assistant
         all_data[raw_data][per_month][file_types] = {}
-        all_data[raw_data][per_month][file_types][overall] = add_missing_file_types(per_month_file_numbers)
-        all_data[raw_data][per_month][file_types][from_human] = add_missing_file_types(per_month_file_numbers_from_human)
-        all_data[raw_data][per_month][file_types][from_assistant] = add_missing_file_types(per_month_file_numbers_from_assistant)
+        all_data[raw_data][per_month][file_types][overall] = add_missing_file_types(per_month_file_numbers, all_file_types)
+        all_data[raw_data][per_month][file_types][from_human] = add_missing_file_types(per_month_file_numbers_from_human, all_file_types)
+        all_data[raw_data][per_month][file_types][from_assistant] = add_missing_file_types(per_month_file_numbers_from_assistant, all_file_types)
         all_data[raw_data][per_conversation]['Length of Messages from Human'] = all_time_human_messages_lengths
         all_data[raw_data][per_conversation]['Length of First Conversation Message from Human'] = all_time_first_human_messages_lengths
         all_data[raw_data][per_conversation]['Length of Messages from Assistant'] = all_time_assistant_messages_lengths
@@ -478,11 +532,6 @@ class main():
         all_data[analyzed_data][all_time]['Number of Files per Conversation']                    = calc_mmmr_box_plot(all_time_files_per_conversation)
         all_data[analyzed_data][all_time]['Number of Files from Human per Conversation']         = calc_mmmr_box_plot(all_time_files_per_conversation_from_human)
         all_data[analyzed_data][all_time]['Number of Files from Assistant per Conversation']     = calc_mmmr_box_plot(all_time_files_per_conversation_from_assistant)
-        #TODO extrapolate this out
-        all_data['Words and Phrases'] = {}
-        all_data['Words and Phrases'][all_time] = {}
-        all_data['Words and Phrases'][all_time]['From Human'] = {}
-        all_data['Words and Phrases'][all_time]['From Human']['Singles'] = all_time_words_in_human_messages
         all_data[analyzed_data][per_month]['Number of Conversations']                            = calc_mmmr_box_plot(create_list_from_dict(per_month_number_of_conversations))
         calc_mmmr_box_plot_for_all_months('Length of Messages from Human', per_month_human_messages_lengths)
         calc_mmmr_box_plot_for_all_months('Length of First Conversation Message from Human', per_month_first_human_messages_lengths)
@@ -494,6 +543,55 @@ class main():
         calc_mmmr_box_plot_for_all_months_all_file_types(overall, per_month_file_numbers)
         calc_mmmr_box_plot_for_all_months_all_file_types(from_human, per_month_file_numbers_from_human)
         calc_mmmr_box_plot_for_all_months_all_file_types(from_assistant, per_month_file_numbers_from_assistant)
+        
+        #TODO sort these
+        # save words and Phrases
+        words_and_phrases = 'Words and Phrases'
+        conversation_name = 'Conversation Name'
+        singles = 'Singles'
+        doubles = 'Doubles'
+        triples = 'Triples'
+        quads = 'Quadruples'
+        quints = 'Quintuples'
+        all_data[words_and_phrases] = {}
+        all_data[words_and_phrases][all_time] = {}
+        all_data[words_and_phrases][all_time][conversation_name] = {}
+        all_data[words_and_phrases][all_time][conversation_name][singles] = all_time_words_in_convo_names
+        all_data[words_and_phrases][all_time][conversation_name][doubles] = all_time_two_words_in_convo_names
+        all_data[words_and_phrases][all_time][conversation_name][triples] = all_time_three_words_in_convo_names
+        all_data[words_and_phrases][all_time][conversation_name][quads] = all_time_four_words_in_convo_names
+        all_data[words_and_phrases][all_time][conversation_name][quints] = all_time_five_words_in_convo_names
+        all_data[words_and_phrases][all_time][from_human] = {}
+        all_data[words_and_phrases][all_time][from_human][singles] = all_time_words_in_human_messages
+        all_data[words_and_phrases][all_time][from_human][doubles] = all_time_two_words_in_human_messages
+        all_data[words_and_phrases][all_time][from_human][triples] = all_time_three_words_in_human_messages
+        all_data[words_and_phrases][all_time][from_human][quads] = all_time_four_words_in_human_messages
+        all_data[words_and_phrases][all_time][from_human][quints] = all_time_five_words_in_human_messages
+        all_data[words_and_phrases][all_time][from_assistant] = {}
+        all_data[words_and_phrases][all_time][from_assistant][singles] = all_time_words_in_assistant_messages
+        all_data[words_and_phrases][all_time][from_assistant][doubles] = all_time_two_words_in_assistant_messages
+        all_data[words_and_phrases][all_time][from_assistant][triples] = all_time_three_words_in_assistant_messages 
+        all_data[words_and_phrases][all_time][from_assistant][quads] = all_time_four_words_in_assistant_messages 
+        all_data[words_and_phrases][all_time][from_assistant][quints] = all_time_five_words_in_assistant_messages 
+        all_data[words_and_phrases][per_month] = {}
+        all_data[words_and_phrases][per_month][conversation_name] = {}
+        all_data[words_and_phrases][per_month][conversation_name][singles] = per_month_words_in_convo_names
+        all_data[words_and_phrases][per_month][conversation_name][doubles] = per_month_two_words_in_convo_names
+        all_data[words_and_phrases][per_month][conversation_name][triples] = per_month_three_words_in_convo_names
+        all_data[words_and_phrases][per_month][conversation_name][quads] = per_month_four_words_in_convo_names
+        all_data[words_and_phrases][per_month][conversation_name][quints] = per_month_five_words_in_convo_names
+        all_data[words_and_phrases][per_month][from_human] = {}
+        all_data[words_and_phrases][per_month][from_human][singles] = per_month_words_in_human_messages
+        all_data[words_and_phrases][per_month][from_human][doubles] = per_month_two_words_in_human_messages
+        all_data[words_and_phrases][per_month][from_human][triples] = per_month_three_words_in_human_messages
+        all_data[words_and_phrases][per_month][from_human][quads] = per_month_four_words_in_human_messages
+        all_data[words_and_phrases][per_month][from_human][quints] = per_month_five_words_in_human_messages
+        all_data[words_and_phrases][per_month][from_assistant] = {}
+        all_data[words_and_phrases][per_month][from_assistant][singles] = per_month_words_in_assistant_messages
+        all_data[words_and_phrases][per_month][from_assistant][doubles] = per_month_two_words_in_assistant_messages
+        all_data[words_and_phrases][per_month][from_assistant][triples] = per_month_three_words_in_assistant_messages
+        all_data[words_and_phrases][per_month][from_assistant][quads] = per_month_four_words_in_assistant_messages
+        all_data[words_and_phrases][per_month][from_assistant][quints] = per_month_five_words_in_assistant_messages
                 
         with open("../output/output.json", mode='w', encoding='utf-8') as outfile:
             json.dump(all_data, outfile, indent=2)
