@@ -499,7 +499,6 @@ class main():
         all_data[misc]['Average Number of Messages per Day'] = all_time_number_of_messages / days_using_claude
 
         # save raw data
-        #TODO Make sure I've gotten ALL OF THE RAW DATA FROM DATA BELOW
         all_data[raw_data][all_time][file_types] = {}
         all_data[raw_data][all_time][file_types][overall] = all_time_file_numbers
         all_data[raw_data][all_time][file_types][from_human] = all_time_file_numbers_from_human
@@ -512,17 +511,19 @@ class main():
         all_data[raw_data][per_month]['Number of Files per Conversation'] = per_month_files_per_conversation
         all_data[raw_data][per_month]['Number of Files from Human per Conversation'] = per_month_files_per_conversation_from_human
         all_data[raw_data][per_month]['Number of Files from Assistant per Conversation'] = per_month_files_per_conversation_from_assistant
+        # after this, sorting not needed
         all_data[raw_data][per_month][file_types] = {}
         all_data[raw_data][per_month][file_types][overall] = add_missing_file_types(per_month_file_numbers, all_file_types)
         all_data[raw_data][per_month][file_types][from_human] = add_missing_file_types(per_month_file_numbers_from_human, all_file_types)
         all_data[raw_data][per_month][file_types][from_assistant] = add_missing_file_types(per_month_file_numbers_from_assistant, all_file_types)
-        all_data[raw_data][per_conversation]['Length of Messages from Human'] = all_time_human_messages_lengths
-        all_data[raw_data][per_conversation]['Length of First Conversation Message from Human'] = all_time_first_human_messages_lengths
-        all_data[raw_data][per_conversation]['Length of Messages from Assistant'] = all_time_assistant_messages_lengths
-        all_data[raw_data][per_conversation]['Length of Conversations'] = all_time_conversations_lengths
-        all_data[raw_data][per_conversation]['Number of Files'] = all_time_files_per_conversation
-        all_data[raw_data][per_conversation]['Number of Files from Human'] = all_time_files_per_conversation_from_human
-        all_data[raw_data][per_conversation]['Number of Files from Assistant'] = all_time_files_per_conversation_from_assistant
+        # this data is unecessary because it's saved in per month raw data
+        # all_data[raw_data][per_conversation]['Length of Messages from Human'] = all_time_human_messages_lengths
+        # all_data[raw_data][per_conversation]['Length of First Conversation Message from Human'] = all_time_first_human_messages_lengths
+        # all_data[raw_data][per_conversation]['Length of Messages from Assistant'] = all_time_assistant_messages_lengths
+        # all_data[raw_data][per_conversation]['Length of Conversations'] = all_time_conversations_lengths
+        # all_data[raw_data][per_conversation]['Number of Files'] = all_time_files_per_conversation
+        # all_data[raw_data][per_conversation]['Number of Files from Human'] = all_time_files_per_conversation_from_human
+        # all_data[raw_data][per_conversation]['Number of Files from Assistant'] = all_time_files_per_conversation_from_assistant
 
         # calculate mean, median, mode, and range for data
         all_data[analyzed_data][all_time]['Length of Messages from Human']                       = calc_mmmr_box_plot(all_time_human_messages_lengths)
@@ -593,8 +594,8 @@ class main():
         all_data[words_and_phrases][per_month][from_assistant][quads] = per_month_four_words_in_assistant_messages
         all_data[words_and_phrases][per_month][from_assistant][quints] = per_month_five_words_in_assistant_messages
                 
-        with open("../output/output.json", mode='w', encoding='utf-8') as outfile:
-            json.dump(all_data, outfile, indent=2)
+        with open("claude_conversation_history_analysis/output/output.json", mode='w', encoding='utf-8') as outfile:
+            json.dump(all_data, outfile, indent=2, sort_keys=False)
 
 if __name__=='__main__':
     main()
