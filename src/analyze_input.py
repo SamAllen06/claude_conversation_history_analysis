@@ -244,12 +244,18 @@ def init_year_month_in_dict(year, month, dictionary: dict[str: dict[str: dict[st
         dictionary[year][month] = {}
     return dictionary
 
-# TODO figure out why this gave an error (TypeError: '<' not supported between instances of 'dict' and 'dict') on line 249
-def sort_dict_by_values(dict: dict[str: int]) -> dict[str: int]:
-    return {key: value for key,
-            value in sorted(dict.items(),
-                            key=lambda item: item[1])}
-    
+
+def sort_dict_by_values(dictionary) -> dict[str: int]:
+    if type(list(dictionary.values())[0]) == dict:
+        for year in list(dictionary.keys()):
+            for month in list(dictionary[year].keys()):
+                dictionary[year][month] = sort_dict_by_values(dictionary[year][month])
+        return dictionary
+    else:
+        return {key: value for key,
+                value in sorted(dictionary.items(),
+                key=lambda item: item[1])}
+
 
 def read_path() -> Path:
     parser = ArgumentParser(prog="anlyze_claude_data", description="Analyzes conversation history from Claude to get interesting data")
