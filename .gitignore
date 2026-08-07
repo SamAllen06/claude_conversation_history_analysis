@@ -1,2 +1,5 @@
 .DS_Store
-output/output.json
+src/.DS_Store
+numeric_output.
+phrase_output.
+file_output.
