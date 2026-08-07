@@ -1,5 +1,5 @@
 .DS_Store
 src/.DS_Store
-numeric_output.
-phrase_output.
-file_output.
+numeric_output.json
+file_output.json
+phrase_output.json
