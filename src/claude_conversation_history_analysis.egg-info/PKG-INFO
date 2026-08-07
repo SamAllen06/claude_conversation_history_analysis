@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: claude-conversation-history-analysis
+Version: 1.0.0
+Requires-Python: >=3.11
+License-File: LICENSE
+Requires-Dist: packaging>=24.1
+Requires-Dist: numpy>=1.26
+Requires-Dist: pandas>=2.2
+Requires-Dist: matplotlib
+Requires-Dist: cftime
+Requires-Dist: nc-time-axis
+Requires-Dist: xarray
+Provides-Extra: speed
+Requires-Dist: scipy; extra == "speed"
+Requires-Dist: bottleneck; extra == "speed"
+Requires-Dist: numbagg; extra == "speed"
+Dynamic: license-file

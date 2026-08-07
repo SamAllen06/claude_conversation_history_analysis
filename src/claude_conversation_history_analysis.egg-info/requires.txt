@@ -1,0 +1,12 @@
+packaging>=24.1
+numpy>=1.26
+pandas>=2.2
+matplotlib
+cftime
+nc-time-axis
+xarray
+
+[speed]
+scipy
+bottleneck
+numbagg

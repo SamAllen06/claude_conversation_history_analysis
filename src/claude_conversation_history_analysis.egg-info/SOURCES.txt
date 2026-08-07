@@ -1,0 +1,8 @@
+LICENSE
+README.md
+pyproject.toml
+src/claude_conversation_history_analysis.egg-info/PKG-INFO
+src/claude_conversation_history_analysis.egg-info/SOURCES.txt
+src/claude_conversation_history_analysis.egg-info/dependency_links.txt
+src/claude_conversation_history_analysis.egg-info/requires.txt
+src/claude_conversation_history_analysis.egg-info/top_level.txt
