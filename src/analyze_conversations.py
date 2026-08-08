@@ -3,10 +3,12 @@ from pathlib import Path
 
 import json
 import datetime as dt
-import csv
 
-#TODO move TODOs over
+#TODO once this is completely functional, do testing on timing before refactoring and making more efficient
+#TODO see if I can use parquet or other techniques to increase speed of programs
 #TODO see if it makes sense to use Nones or zeros
+#TODO consider making my own data type for multidimensional tables
+#TODO make md documentation files for every file, including input and output
 
 def split_string(string: str) -> list[str]:
     strings: list[str] = []
@@ -255,15 +257,14 @@ def extract_data(input):
                             file_output[table_dates_1st_dim.index(date)][file_type_categories_2nd_dim.index(from_user)][file_types_3rd_dim.index(file_type)] += 1
 
         # save raw data
-        path = 'claude_conversation_history_analysis/output/'
-        with open(path + 'numeric_output.txt', 'w') as numeric_output_file:
-            numeric_output_file.writelines(numeric_output)
+        with open("claude_conversation_history_analysis/output/numeric_output.json", mode='w', encoding='utf-8') as outfile:
+            json.dump(numeric_output, outfile, indent=2)
 
-        # with open('/claude_conversation_history_analysis/output/phrase_output.txt', 'w+') as phrase_output_file:
-        #     phrase_output_file.writelines(phrase_output)
+        with open("claude_conversation_history_analysis/output/phrase_output.json", mode='w', encoding='utf-8') as outfile:
+            json.dump(phrase_output, outfile, indent=2)
 
-        # with open('/claude_conversation_history_analysis/output/file_output.txt', 'w+') as file_output_file:
-        #     file_output_file.writelines(file_output)
+        with open("claude_conversation_history_analysis/output/file_output.json", mode='w', encoding='utf-8') as outfile:
+            json.dump(file_output, outfile, indent=2)
 
 
 def read_path() -> Path:
